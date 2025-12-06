@@ -67,10 +67,6 @@ module.exports.deleteItem = async (req, res) => {
   }
 };
 
-// --------------------
-// NEW LIKE CONTROLLERS
-// --------------------
-
 module.exports.likeItem = async (req, res) => {
   try {
     const item = await ClothingItem.findByIdAndUpdate(
@@ -111,7 +107,7 @@ const {
   deleteItem,
   likeItem,
   dislikeItem,
-} = require("../controllers/items");
+} = require("../controllers/clothingItems");
 
 router.get("/", getItems);
 router.post("/", createItem);

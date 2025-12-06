@@ -1,5 +1,4 @@
 const User = require("../models/user");
-const { SOME_ERROR_CODE } = require("../utils/errors");
 
 const {
   BAD_REQUEST_ERROR,

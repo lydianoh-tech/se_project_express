@@ -7,7 +7,9 @@ router.use("/items", itemsRouter);
 
 // Non-existent resource handler
 router.use((req, res) => {
-  res.status(404).send({ message: "Requested resource not found" });
+  res
+    .status(BAD_REQUEST_ERROR)
+    .send({ message: "Requested resource not found" });
 });
 
 module.exports = router;

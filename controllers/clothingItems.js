@@ -5,7 +5,7 @@ const {
   SERVER_ERROR,
 } = require("../utils/errors");
 
-module.exports.getItems = async (req, res) => {
+const getItems = async (req, res) => {
   try {
     const items = await ClothingItem.find({});
     return res.send(items);
@@ -17,7 +17,7 @@ module.exports.getItems = async (req, res) => {
   }
 };
 
-module.exports.createItem = async (req, res) => {
+const createItem = async (req, res) => {
   try {
     const { name, weather, imageUrl } = req.body;
     const owner = req.user._id; // why: ensures ownership before real auth exists
@@ -39,7 +39,7 @@ module.exports.createItem = async (req, res) => {
   }
 };
 
-module.exports.deleteItem = async (req, res) => {
+const deleteItem = async (req, res) => {
   try {
     await ClothingItem.findByIdAndDelete(req.params.itemId).orFail(() => {
       const error = new Error("Item not found");
@@ -67,7 +67,7 @@ module.exports.deleteItem = async (req, res) => {
   }
 };
 
-module.exports.likeItem = async (req, res) => {
+const likeItem = async (req, res) => {
   try {
     const item = await ClothingItem.findByIdAndUpdate(
       req.params.itemId,
@@ -99,7 +99,7 @@ module.exports.likeItem = async (req, res) => {
   }
 };
 
-module.exports.dislikeItem = async (req, res) => {
+const dislikeItem = async (req, res) => {
   try {
     const item = await ClothingItem.findByIdAndUpdate(
       req.params.itemId,
@@ -129,4 +129,11 @@ module.exports.dislikeItem = async (req, res) => {
       .status(SERVER_ERROR)
       .send({ message: "An error has occurred on the server" });
   }
+};
+module.exports = {
+  createItem,
+  getItems,
+  deleteItem,
+  likeItem,
+  dislikeItem,
 };

@@ -1,13 +1,12 @@
 const express = require("express");
-
-// listen to port 3001
-const { PORT = 3001 } = process.env;
-
+const mongoose = require("mongoose");
 const mainRouter = require("./routes");
 
 const app = express();
 
-const mongoose = require("mongoose");
+// listen to port 3001
+const { PORT = 3001 } = process.env;
+
 app.use(express.json());
 
 // Connect to MongoDB locally because the app requires persistent data storage
@@ -24,7 +23,7 @@ app.use((req, res, next) => {
 app.use(mainRouter);
 
 // Error handler
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error(err);
   res.status(500).send({ message: "An error occurred on the server" });
 });

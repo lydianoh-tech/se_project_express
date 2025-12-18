@@ -5,13 +5,13 @@ const { JWT_SECRET } = require("../utils/config");
 const User = require("../models/user");
 
 const {
-  BAD_REQUEST_ERROR,
-  NOT_FOUND_ERROR,
-  SERVER_ERROR,
-  CREATED,
-  CONFLICT_ERROR,
+  BAD_REQUEST_STATUS_CODE,
+  NOT_FOUND_STATUS_CODE,
+  SERVER_STATUS_CODE,
+  CREATED_STATUS_CODE,
+  CONFLICT_STATUS_CODE,
   DATABASE_ERROR_CODE,
-  UNAUTHORIZED_ERROR_CODE,
+  UNAUTHORIZED_STATUS_CODE,
 } = require("../utils/errors");
 
 module.exports.login = async (req, res) => {
@@ -27,10 +27,12 @@ module.exports.login = async (req, res) => {
     console.error(err);
     if (err && err.message === "Invalid email or password") {
       return res
-        .status(UNAUTHORIZED_ERROR_CODE)
+        .status(UNAUTHORIZED_STATUS_CODE)
         .send({ message: "Invalid email or password" });
     }
-    return res.status(SERVER_ERROR).send({ message: "An error has occurred on the server" });
+    return res
+      .status(SERVER_STATUS_CODE)
+      .send({ message: "An error has occurred on the server" });
   }
 };
 
@@ -40,7 +42,7 @@ module.exports.getCurrentUser = async (req, res) => {
 
     const user = await User.findById(userId).orFail(() => {
       const error = new Error("User not found");
-      error.statusCode = NOT_FOUND_ERROR;
+      error.statusCode = NOT_FOUND_STATUS_CODE;
       throw error;
     });
 
@@ -50,16 +52,18 @@ module.exports.getCurrentUser = async (req, res) => {
 
     if (err.name === "CastError") {
       return res
-        .status(BAD_REQUEST_ERROR)
+        .status(BAD_REQUEST_STATUS_CODE)
         .send({ message: "Invalid user ID format" });
     }
 
-    if (err.statusCode === NOT_FOUND_ERROR) {
-      return res.status(NOT_FOUND_ERROR).send({ message: "User not found" });
+    if (err.statusCode === NOT_FOUND_STATUS_CODE) {
+      return res
+        .status(NOT_FOUND_STATUS_CODE)
+        .send({ message: "User not found" });
     }
 
     return res
-      .status(SERVER_ERROR)
+      .status(SERVER_STATUS_CODE)
       .send({ message: "An error has occurred on the server" });
   }
 };
@@ -72,7 +76,7 @@ module.exports.updateUser = async (req, res) => {
       { new: true, runValidators: true }
     ).orFail(() => {
       const error = new Error("User not found");
-      error.statusCode = NOT_FOUND_ERROR;
+      error.statusCode = NOT_FOUND_STATUS_CODE;
       throw error;
     });
 
@@ -81,14 +85,16 @@ module.exports.updateUser = async (req, res) => {
     console.error(err);
     if (err.name === "ValidationError") {
       return res
-        .status(BAD_REQUEST_ERROR)
+        .status(BAD_REQUEST_STATUS_CODE)
         .send({ message: "Invalid user data" });
     }
-    if (err.statusCode === NOT_FOUND_ERROR) {
-      return res.status(NOT_FOUND_ERROR).send({ message: "User not found" });
+    if (err.statusCode === NOT_FOUND_STATUS_CODE) {
+      return res
+        .status(NOT_FOUND_STATUS_CODE)
+        .send({ message: "User not found" });
     }
     return res
-      .status(SERVER_ERROR)
+      .status(SERVER_STATUS_CODE)
       .send({ message: "An error has occurred on the server" });
   }
 };
@@ -105,7 +111,7 @@ module.exports.createUser = async (req, res) => {
       password: hashedPassword,
     });
 
-    return res.status(CREATED).send({
+    return res.status(CREATED_STATUS_CODE).send({
       _id: user._id,
       email: user.email,
       name: user.name,
@@ -116,28 +122,17 @@ module.exports.createUser = async (req, res) => {
 
     if (err.name === "ValidationError") {
       return res
-        .status(BAD_REQUEST_ERROR)
+        .status(BAD_REQUEST_STATUS_CODE)
         .send({ message: "Invalid user data" });
     }
     if (err.code === DATABASE_ERROR_CODE) {
       return res
-        .status(CONFLICT_ERROR)
+        .status(CONFLICT_STATUS_CODE)
         .send({ message: "Email already in use" });
     }
 
     return res
-      .status(SERVER_ERROR)
-      .send({ message: "An error has occurred on the server" });
-  }
-};
-module.exports.getUsers = async (req, res) => {
-  try {
-    const users = await User.find({});
-    return res.send(users);
-  } catch (err) {
-    console.error(err); // essential for debugging
-    return res
-      .status(SERVER_ERROR)
+      .status(SERVER_STATUS_CODE)
       .send({ message: "An error has occurred on the server" });
   }
 };

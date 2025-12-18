@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const { SERVER_ERROR } = require("./utils/errors");
+const { SERVER_STATUS_CODE } = require("./utils/errors");
 const mainRouter = require("./routes");
 
 const app = express();
@@ -22,7 +22,9 @@ app.use(mainRouter);
 // Error handler
 app.use((err, req, res) => {
   console.error(err);
-  res.status(SERVER_ERROR).send({ message: "An error occurred on the server" });
+  res
+    .status(SERVER_STATUS_CODE)
+    .send({ message: "An error occurred on the server" });
 });
 
 // Start server to allow external clients to communicate with the API

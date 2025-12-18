@@ -1,9 +1,10 @@
 const ClothingItem = require("../models/clothingItem");
 const {
-  BAD_REQUEST_ERROR,
-  NOT_FOUND_ERROR,
-  SERVER_ERROR,
-  FORBIDDEN_ERROR,
+  BAD_REQUEST_STATUS_CODE,
+  NOT_FOUND_STATUS_CODE,
+  SERVER_STATUS_CODE,
+  FORBIDDEN_STATUS_CODE,
+  CREATED_STATUS_CODE,
 } = require("../utils/errors");
 
 const getItems = async (req, res) => {
@@ -13,7 +14,7 @@ const getItems = async (req, res) => {
   } catch (err) {
     console.error(err);
     return res
-      .status(SERVER_ERROR)
+      .status(SERVER_STATUS_CODE)
       .send({ message: "An error has occurred on the server" });
   }
 };
@@ -24,18 +25,18 @@ const createItem = async (req, res) => {
     const owner = req.user._id; // why: ensures ownership before real auth exists
 
     const item = await ClothingItem.create({ name, weather, imageUrl, owner });
-    return res.status(201).send(item);
+    return res.status(CREATED_STATUS_CODE).send(item);
   } catch (err) {
     console.error(err);
 
     if (err.name === "ValidationError") {
       return res
-        .status(BAD_REQUEST_ERROR)
+        .status(BAD_REQUEST_STATUS_CODE)
         .send({ message: "Invalid item data" });
     }
 
     return res
-      .status(SERVER_ERROR)
+      .status(SERVER_STATUS_CODE)
       .send({ message: "An error has occurred on the server" });
   }
 };
@@ -46,14 +47,14 @@ const deleteItem = async (req, res) => {
 
     const item = await ClothingItem.findById(itemId).orFail(() => {
       const error = new Error("Item not found");
-      error.statusCode = NOT_FOUND_ERROR;
+      error.statusCode = NOT_FOUND_STATUS_CODE;
       throw error;
     });
 
     // Only the owner can delete the item
     if (item.owner.toString() !== req.user._id) {
       return res
-        .status(FORBIDDEN_ERROR)
+        .status(FORBIDDEN_STATUS_CODE)
         .send({ message: "You are not authorized to delete this item" });
     }
 
@@ -65,16 +66,18 @@ const deleteItem = async (req, res) => {
 
     if (err.name === "CastError") {
       return res
-        .status(BAD_REQUEST_ERROR)
+        .status(BAD_REQUEST_STATUS_CODE)
         .send({ message: "Invalid item ID format" });
     }
 
-    if (err.statusCode === NOT_FOUND_ERROR) {
-      return res.status(NOT_FOUND_ERROR).send({ message: "Item not found" });
+    if (err.statusCode === NOT_FOUND_STATUS_CODE) {
+      return res
+        .status(NOT_FOUND_STATUS_CODE)
+        .send({ message: "Item not found" });
     }
 
     return res
-      .status(SERVER_ERROR)
+      .status(SERVER_STATUS_CODE)
       .send({ message: "An error has occurred on the server" });
   }
 };
@@ -87,7 +90,7 @@ const likeItem = async (req, res) => {
       { new: true }
     ).orFail(() => {
       const error = new Error("Item not found");
-      error.statusCode = NOT_FOUND_ERROR;
+      error.statusCode = NOT_FOUND_STATUS_CODE;
       throw error;
     });
 
@@ -97,16 +100,18 @@ const likeItem = async (req, res) => {
 
     if (err.name === "CastError") {
       return res
-        .status(BAD_REQUEST_ERROR)
+        .status(BAD_REQUEST_STATUS_CODE)
         .send({ message: "Invalid item ID format" });
     }
 
-    if (err.statusCode === NOT_FOUND_ERROR) {
-      return res.status(NOT_FOUND_ERROR).send({ message: "Item not found" });
+    if (err.statusCode === NOT_FOUND_STATUS_CODE) {
+      return res
+        .status(NOT_FOUND_STATUS_CODE)
+        .send({ message: "Item not found" });
     }
 
     return res
-      .status(SERVER_ERROR)
+      .status(SERVER_STATUS_CODE)
       .send({ message: "An error has occurred on the server" });
   }
 };
@@ -119,7 +124,7 @@ const dislikeItem = async (req, res) => {
       { new: true }
     ).orFail(() => {
       const error = new Error("Item not found");
-      error.statusCode = NOT_FOUND_ERROR;
+      error.statusCode = NOT_FOUND_STATUS_CODE;
       throw error;
     });
 
@@ -129,16 +134,18 @@ const dislikeItem = async (req, res) => {
 
     if (err.name === "CastError") {
       return res
-        .status(BAD_REQUEST_ERROR)
+        .status(BAD_REQUEST_STATUS_CODE)
         .send({ message: "Invalid item ID format" });
     }
 
-    if (err.statusCode === NOT_FOUND_ERROR) {
-      return res.status(NOT_FOUND_ERROR).send({ message: "Item not found" });
+    if (err.statusCode === NOT_FOUND_STATUS_CODE) {
+      return res
+        .status(NOT_FOUND_STATUS_CODE)
+        .send({ message: "Item not found" });
     }
 
     return res
-      .status(SERVER_ERROR)
+      .status(SERVER_STATUS_CODE)
       .send({ message: "An error has occurred on the server" });
   }
 };

@@ -1,24 +1,20 @@
 const express = require("express");
+const cors = require("cors");
 const mongoose = require("mongoose");
-const mainRouter = require("./routes");
 const { SERVER_ERROR } = require("./utils/errors");
+const mainRouter = require("./routes");
 
 const app = express();
 
 // listen to port 3001
 const { PORT = 3001 } = process.env;
 
+app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Connect to MongoDB locally because the app requires persistent data storage
 mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
-
-app.use((req, res, next) => {
-  req.user = {
-    _id: "6932f9855f4d340caa01550d",
-  };
-  next();
-});
 
 // Mounted here so all routes and the 404 handler inside routers apply globally
 app.use(mainRouter);

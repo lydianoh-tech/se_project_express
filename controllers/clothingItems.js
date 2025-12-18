@@ -3,6 +3,7 @@ const {
   BAD_REQUEST_ERROR,
   NOT_FOUND_ERROR,
   SERVER_ERROR,
+  FORBIDDEN_ERROR,
 } = require("../utils/errors");
 
 const getItems = async (req, res) => {
@@ -41,11 +42,22 @@ const createItem = async (req, res) => {
 
 const deleteItem = async (req, res) => {
   try {
-    await ClothingItem.findByIdAndDelete(req.params.itemId).orFail(() => {
+    const { itemId } = req.params;
+
+    const item = await ClothingItem.findById(itemId).orFail(() => {
       const error = new Error("Item not found");
       error.statusCode = NOT_FOUND_ERROR;
       throw error;
     });
+
+    // Only the owner can delete the item
+    if (item.owner.toString() !== req.user._id) {
+      return res
+        .status(FORBIDDEN_ERROR)
+        .send({ message: "You are not authorized to delete this item" });
+    }
+
+    await item.deleteOne();
 
     return res.send({ message: "Item deleted successfully" });
   } catch (err) {

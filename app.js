@@ -20,7 +20,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 app.use(mainRouter);
 
 // Error handler
-app.use((err, req, res) => {
+app.use((err, req, res, next) => {
   console.error(err);
   res
     .status(SERVER_STATUS_CODE)

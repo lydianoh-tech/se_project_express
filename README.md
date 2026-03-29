@@ -2,6 +2,10 @@
 
 The back-end project is focused on creating a server for the WTWR application. You’ll gain a deeper understanding of how to work with databases, set up security and testing, and deploy web applications on a remote machine. The eventual goal is to create a server with an API and user authorization.
 
+## Frontend
+
+[React Frontend Repository](https://github.com/lydianoh-tech/se_project_react)
+
 ## Running the Project
 
 `npm run start` — to launch the server
@@ -198,3 +202,9 @@ License
 This project is for educational use within the TripleTen software engineering program.
 URL:https://lydianoh-tech.github.io/se_project_express/
 video:https://youtu.be/agMxt064GyU
+
+## Deployment
+
+https://wtwrtodayforyou.jumpingcrab.com
+https://www.wtwrtodayforyou.jumpingcrab.com
+https://api.wtwrtodayforyou.jumpingcrab.com

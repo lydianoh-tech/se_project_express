@@ -5,134 +5,108 @@ const { JWT_SECRET } = require("../utils/config");
 const User = require("../models/user");
 
 const {
-  BAD_REQUEST_STATUS_CODE,
-  NOT_FOUND_STATUS_CODE,
-  SERVER_STATUS_CODE,
-  CREATED_STATUS_CODE,
-  CONFLICT_STATUS_CODE,
-  DATABASE_ERROR_CODE,
-  UNAUTHORIZED_STATUS_CODE,
-} = require("../utils/errors");
+  BadRequestError,
+  NotFoundError,
+  ConflictError,
+  UnauthorizedError,
+} = require("../errors");
+const { CREATED_STATUS_CODE, DATABASE_ERROR_CODE } = require("../utils/errors");
 
 module.exports.login = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new BadRequestError("Email and password are required");
+  }
+
   try {
-    const { email, password } = req.body;
     const user = await User.findUserByCredentials(email, password);
 
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
       expiresIn: "7d",
     });
-    return res.send({ token });
+
+    res.send({ token });
   } catch (err) {
-    console.error(err);
-    if (err && err.message === "Invalid email or password") {
-      return res
-        .status(UNAUTHORIZED_STATUS_CODE)
-        .send({ message: "Invalid email or password" });
+    if (err.message === "Invalid email or password") {
+      throw new UnauthorizedError("Invalid email or password");
     }
-    return res
-      .status(SERVER_STATUS_CODE)
-      .send({ message: "An error has occurred on the server" });
+    throw err;
   }
 };
 
 module.exports.getCurrentUser = async (req, res) => {
-  try {
-    const userId = req.user && req.user._id;
+  const userId = req.user && req.user._id;
 
-    const user = await User.findById(userId).orFail(() => {
-      const error = new Error("User not found");
-      error.statusCode = NOT_FOUND_STATUS_CODE;
-      throw error;
-    });
-
-    return res.send(user);
-  } catch (err) {
-    console.error(err);
-
-    if (err.name === "CastError") {
-      return res
-        .status(BAD_REQUEST_STATUS_CODE)
-        .send({ message: "Invalid user ID format" });
-    }
-
-    if (err.statusCode === NOT_FOUND_STATUS_CODE) {
-      return res
-        .status(NOT_FOUND_STATUS_CODE)
-        .send({ message: "User not found" });
-    }
-
-    return res
-      .status(SERVER_STATUS_CODE)
-      .send({ message: "An error has occurred on the server" });
+  if (!userId) {
+    throw new UnauthorizedError("User not authenticated");
   }
+
+  const user = await User.findById(userId).orFail(() => {
+    throw new NotFoundError("User not found");
+  });
+
+  res.send(user);
 };
+
 module.exports.updateUser = async (req, res) => {
+  const { name, avatar } = req.body;
+
+  if (!name || !avatar) {
+    throw new BadRequestError("Name and avatar are required");
+  }
+
   try {
-    const { name, avatar } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { name, avatar }, // why: only allow updating name and avatar
       { new: true, runValidators: true }
     ).orFail(() => {
-      const error = new Error("User not found");
-      error.statusCode = NOT_FOUND_STATUS_CODE;
-      throw error;
+      throw new NotFoundError("User not found");
     });
 
-    return res.send(user);
+    res.send(user);
   } catch (err) {
-    console.error(err);
     if (err.name === "ValidationError") {
-      return res
-        .status(BAD_REQUEST_STATUS_CODE)
-        .send({ message: "Invalid user data" });
+      throw new BadRequestError("Invalid user data");
     }
-    if (err.statusCode === NOT_FOUND_STATUS_CODE) {
-      return res
-        .status(NOT_FOUND_STATUS_CODE)
-        .send({ message: "User not found" });
-    }
-    return res
-      .status(SERVER_STATUS_CODE)
-      .send({ message: "An error has occurred on the server" });
+    throw err;
   }
 };
 
 module.exports.createUser = async (req, res) => {
+  const { name, username, avatar, email, password } = req.body;
+  const normalizedName = name || username;
+
+  if (!normalizedName || !avatar || !email || !password) {
+    throw new BadRequestError(
+      "Name or username, avatar, email, and password are required"
+    );
+  }
+
   try {
-    const { name, avatar, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
-      name,
+      name: normalizedName,
       avatar,
       email,
       password: hashedPassword,
     });
 
-    return res.status(CREATED_STATUS_CODE).send({
+    res.status(CREATED_STATUS_CODE).send({
       _id: user._id,
       email: user.email,
       name: user.name,
       avatar: user.avatar,
     });
   } catch (err) {
-    console.error(err);
-
     if (err.name === "ValidationError") {
-      return res
-        .status(BAD_REQUEST_STATUS_CODE)
-        .send({ message: "Invalid user data" });
+      throw new BadRequestError("Invalid user data");
     }
     if (err.code === DATABASE_ERROR_CODE) {
-      return res
-        .status(CONFLICT_STATUS_CODE)
-        .send({ message: "Email already in use" });
+      throw new ConflictError("Email already in use");
     }
-
-    return res
-      .status(SERVER_STATUS_CODE)
-      .send({ message: "An error has occurred on the server" });
+    throw err;
   }
 };
